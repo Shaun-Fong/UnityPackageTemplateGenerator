@@ -6,23 +6,26 @@ Quick Generate Package Template
 
 - Go to `Action`
 
-![image](https://github.com/Shaun-Fong/UnityPackageTemplate/assets/16713354/db2d3fdb-f28b-49d8-9e22-ca01969dee6a)
+![image](https://github.com/user-attachments/assets/52c00cdf-328a-4a38-bf0b-a85df918c2b9)
 
 - Click `Package Packing` Workflows
 
 - Click `Run workflow`
 
-![image](https://github.com/Shaun-Fong/UnityPackageTemplate/assets/16713354/c6923097-3e9f-43d8-89ef-8b768be516b0)
+![image](https://github.com/user-attachments/assets/32ec6495-6f3b-440c-b8b2-53acf906a555)
 
 - Fill All Parameters
 
-![image](https://github.com/Shaun-Fong/UnityPackageTemplate/assets/16713354/09fbcaf2-f815-4f3c-ad68-4c7f1c5a65ce)
-
 - Click `Run workflow` down below!
 
-- Then you can download the `Package` zip file in `Airtifacts`.
+- Then you can download the `Package` zip file in `Airtifacts`!
 
-![image](https://github.com/Shaun-Fong/UnityPackageTemplate/assets/16713354/62303c73-0acb-4f0c-a6aa-977699054552)
+![image](https://github.com/user-attachments/assets/46b5b192-4cea-4a98-8157-cc39bca151cf)
+
+## Directory Structure
+
+![image](https://github.com/user-attachments/assets/e91e0987-3f73-4e5c-b9ed-87c99a175441)
+
 
 # Ref
  
