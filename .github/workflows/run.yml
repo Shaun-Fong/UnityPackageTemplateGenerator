@@ -1,0 +1,111 @@
+name: Package Packing
+
+on:
+  workflow_dispatch:
+    inputs:
+      #https://docs.unity3d.com/Manual/upm-manifestPkg.html
+      PackageName:
+        description: 'A unique identifier that conforms to the Unity Package Manager naming convention, which uses reverse domain name notation.for example, com.example or net.example'
+        required: true
+        default: 'com.company-name.package'
+      Version:
+        description: 'The package version number (MAJOR.MINOR.PATCH).For example, “3.2.1” indicates that this is the 3rd major release, the 2nd minor release, and the first patch.'
+        required: true
+        default: '1.0.0'
+      Description:
+        description: 'A brief description of the package. This is the text that appears in the details view of the Package Manager window. This field supports UTF–8 character codes. This means that you can use special formatting character codes, such as line breaks (\n) and bullets (\u25AA).'
+        required: true
+        default: 'description'
+      PackageDisplayName:
+        description: 'A user-friendly name to appear in the Unity Editor (for example, in the Project Browser, the Package Manager window, etc.).For example, Unity Timeline, ProBuilder, In App Purchasing.'
+        required: true
+        default: 'Package'
+      Unity:
+        description: 'Indicates the lowest Unity version the package is compatible with. If omitted, the Package Manager considers the package compatible with all Unity versions.The expected format is “<MAJOR>.<MINOR>” (for example, 2018.3). To point to a specific patch, use the unityRelease property as well.Note: A package that isn’t compatible with Unity doesn’t appear in the Package Manager window.'
+        required: true
+        default: '2018.3'
+      Author:
+        description: 'The author of the package.'
+        required: true
+        default: ''
+
+
+jobs:
+  Packing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Print
+        run: |
+          echo ${{ github.event.inputs.PackageName }}
+          echo ${{ github.event.inputs.Version }}
+          echo ${{ github.event.inputs.Description }}
+          echo ${{ github.event.inputs.PackageDisplayName }}
+          echo ${{ github.event.inputs.Unity }}
+          echo ${{ github.event.inputs.Author }}
+          packagename=${{ github.event.inputs.PackageName }}
+          echo "package_name=$packagename" >> "$GITHUB_ENV"
+
+      - name: package.json
+        run: |
+          chmod -R 777 ./
+          ./run.sh ./package.json NAME "${{ github.event.inputs.PackageName }}"
+          ./run.sh ./package.json VERSION "${{ github.event.inputs.Version }}"
+          ./run.sh ./package.json DESCRIPTION "${{ github.event.inputs.Description }}"
+          ./run.sh ./package.json DISPLAY "${{ github.event.inputs.PackageDisplayName }}"
+          ./run.sh ./package.json UNITY "${{ github.event.inputs.Unity }}"
+          ./run.sh ./package.json AUTHOR "${{ github.event.inputs.Author }}"
+          cat package.json
+
+      - name: Runtime Asmdef
+        run: |
+          mv ./Runtime/CompanyName.PackageName.Runtime.asmdef ./Runtime/${{ env.package_name }}.Runtime.asmdef
+          ./run.sh ./Runtime/${{ env.package_name }}.Runtime.asmdef NAME ${{ env.package_name }}.Runtime
+          ./run.sh ./Runtime/${{ env.package_name }}.Runtime.asmdef SPACE ${{ env.package_name }}.Runtime
+          cat ./Runtime/${{ env.package_name }}.Runtime.asmdef
+
+      - name: Editor Asmdef
+        run: |
+          mv ./Editor/CompanyName.PackageName.Editor.asmdef ./Editor/${{ env.package_name }}.Editor.asmdef
+          ./run.sh ./Editor/${{ env.package_name }}.Editor.asmdef NAME ${{ env.package_name }}.Editor
+          ./run.sh ./Editor/${{ env.package_name }}.Editor.asmdef SPACE ${{ env.package_name }}.Editor
+          ./run.sh ./Editor/${{ env.package_name }}.Editor.asmdef RUNTIME ${{ env.package_name }}.Runtime
+          cat ./Editor/${{ env.package_name }}.Editor.asmdef
+
+      - name: Test Runtime Asmdef
+        run: |
+          mv ./Tests/Runtime/CompanyName.PackageName.Test.Runtime.asmdef ./Tests/Runtime/${{ env.package_name }}.Test.Runtime.asmdef
+          ./run.sh ./Tests/Runtime/${{ env.package_name }}.Test.Runtime.asmdef NAME ${{ env.package_name }}.Test.Runtime
+          ./run.sh ./Tests/Runtime/${{ env.package_name }}.Test.Runtime.asmdef SPACE ${{ env.package_name }}.Test.Runtime
+          ./run.sh ./Tests/Runtime/${{ env.package_name }}.Test.Runtime.asmdef RUNTIME ${{ env.package_name }}.Runtime
+          cat ./Tests/Runtime/${{ env.package_name }}.Test.Runtime.asmdef
+
+      - name: Test Editor Asmdef
+        run: |
+          mv ./Tests/Editor/CompanyName.PackageName.Test.Editor.asmdef ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef
+          ./run.sh ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef NAME ${{ env.package_name }}.Test.Editor
+          ./run.sh ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef SPACE ${{ env.package_name }}.Test.Editor
+          ./run.sh ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef RUNTIME ${{ env.package_name }}.Runtime
+          ./run.sh ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef EDITOR ${{ env.package_name }}.Editor
+          ./run.sh ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef TESTRT ${{ env.package_name }}.Test.Runtime
+          cat ./Tests/Editor/${{ env.package_name }}.Test.Editor.asmdef
+
+      - name: Tar Packing
+        run: |
+          mkdir ${{ env.package_name }}
+          mv ./Editor ./${{ env.package_name }}/Editor
+          mv ./Runtime ./${{ env.package_name }}/Runtime
+          mv ./Tests ./${{ env.package_name }}/Tests
+          mv ./CHANGELOG.md ./${{ env.package_name }}/CHANGELOG.md
+          mv ./LICENSE ./${{ env.package_name }}/LICENSE
+          mv ./package.json ./${{ env.package_name }}/package.json
+          mv ./README.md ./${{ env.package_name }}/README.md
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: ${{ env.package_name }}
+          path: ${{ env.package_name }}
